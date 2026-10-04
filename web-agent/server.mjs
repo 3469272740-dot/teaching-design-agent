@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { timingSafeEqual } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +14,12 @@ const MAX_DOCX_XML = 20 * 1024 * 1024;
 const MAX_LESSON_CHARS = 100_000;
 await loadDotEnv();
 const MODEL = process.env.OPENAI_MODEL || "gpt-6-astra";
+const HOST = process.env.HOST || "127.0.0.1";
+const APP_PASSWORD = process.env.APP_PASSWORD || "";
+
+if (HOST === "0.0.0.0" && process.env.OPENAI_API_KEY && !APP_PASSWORD) {
+  throw new Error("公网服务配置 OPENAI_API_KEY 前，必须先设置 APP_PASSWORD 保护访问。");
+}
 
 async function loadDotEnv() {
   try {
@@ -36,6 +43,17 @@ function sendJson(res, status, payload) {
     "Referrer-Policy": "no-referrer",
   });
   res.end(JSON.stringify(payload));
+}
+
+function isAuthorized(req) {
+  const match = /^Basic\s+([A-Za-z0-9+/]+={0,2})$/i.exec(req.headers.authorization || "");
+  if (!match) return false;
+  const decoded = Buffer.from(match[1], "base64").toString("utf8");
+  const separator = decoded.indexOf(":");
+  if (separator < 0) return false;
+  const candidate = Buffer.from(decoded.slice(separator + 1));
+  const expected = Buffer.from(APP_PASSWORD);
+  return candidate.length === expected.length && timingSafeEqual(candidate, expected);
 }
 
 async function readJson(req) {
@@ -202,6 +220,14 @@ const MIME = {
 
 const server = createServer(async (req, res) => {
   try {
+    if (APP_PASSWORD && !isAuthorized(req)) {
+      res.writeHead(401, {
+        "WWW-Authenticate": 'Basic realm="课案明鉴", charset="UTF-8"',
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+      });
+      return res.end("需要访问密码。");
+    }
     const url = new URL(req.url, "http://127.0.0.1");
     if (req.method === "GET" && url.pathname === "/api/status") {
       return sendJson(res, 200, { ready: Boolean(process.env.OPENAI_API_KEY), model: MODEL });
@@ -230,7 +256,6 @@ const server = createServer(async (req, res) => {
 });
 
 const port = Number(process.env.PORT || 4173);
-const host = process.env.HOST || "127.0.0.1";
-server.listen(port, host, () => {
-  console.log(`教学设计助手已启动：${host}:${port}`);
+server.listen(port, HOST, () => {
+  console.log(`教学设计助手已启动：${HOST}:${port}`);
 });
