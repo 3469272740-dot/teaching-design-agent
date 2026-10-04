@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8f4">
+  <title>课案明鉴 · 教学设计诊断</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="课案明鉴首页">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>课案明鉴</span>
+      </a>
+      <span class="local-badge"><i></i> 本机工作台</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">TEACHING DESIGN · REVIEW & REFINE</p>
+          <h1>让每一份教案，<br><em>都有据可依地变好。</em></h1>
+          <p class="hero-text">依据七个教学设计维度进行诊断，从教案证据出发，找到值得优先调整的地方。</p>
+        </div>
+        <div class="hero-stamp" aria-hidden="true">
+          <span class="stamp-line">PLAN</span>
+          <span class="stamp-arrow">↘</span>
+          <span class="stamp-line">REFINE</span>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="form-panel panel">
+          <div class="section-heading">
+            <div><p class="section-kicker">开始一次诊断</p><h2>教案信息</h2></div>
+            <span class="step-number">01 <span>/ 02</span></span>
+          </div>
+
+          <div class="metadata-grid">
+            <label>学科 <span class="optional">选填</span><input id="subject" type="text" maxlength="80" placeholder="例如：小学英语"></label>
+            <label>学段 / 年级 <span class="optional">选填</span><input id="grade" type="text" maxlength="80" placeholder="例如：小学三年级"></label>
+            <label class="duration-field">课时 <span class="optional">选填</span><input id="duration" type="text" maxlength="80" placeholder="例如：1 课时，40 分钟"></label>
+          </div>
+
+          <label class="input-label" for="lesson">粘贴教案 <span class="optional">或上传文件</span></label>
+          <textarea id="lesson" rows="11" placeholder="可粘贴完整教案，也可以只粘贴想要诊断的部分。&#10;&#10;建议包含：学情分析、教学目标、重难点、教学活动、教学评价……"></textarea>
+
+          <div class="upload-row">
+            <label class="upload-button" for="file-input"><span class="upload-icon">＋</span><span>选择教案文件</span></label>
+            <input id="file-input" type="file" accept=".docx,.txt,.md" hidden>
+            <span id="file-name" class="file-name">支持 DOCX、TXT、MD，最大 10 MB</span>
+            <button id="clear-file" class="text-button" type="button" hidden>移除</button>
+          </div>
+
+          <div class="options-row">
+            <label class="check-label"><input id="full-rewrite" type="checkbox"><span class="custom-check"></span><span>同时生成完整优化稿</span></label>
+            <span class="option-hint">默认提供诊断和修改建议</span>
+          </div>
+
+          <button id="submit" class="submit-button" type="button">
+            <span class="submit-label">开始诊断</span><span class="submit-arrow" aria-hidden="true">↗</span>
+          </button>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+          <p class="privacy-note"><span aria-hidden="true">⌑</span> 教案会发送至你配置的模型 API 进行分析，本网页不会保存教案。建议先隐去学生姓名等个人信息。</p>
+        </section>
+
+        <aside class="guide-column">
+          <section class="panel guide-panel">
+            <div class="section-heading compact">
+              <div><p class="section-kicker">诊断框架</p><h2>七个观察维度</h2></div>
+              <span class="tiny-orbit" aria-hidden="true">✳</span>
+            </div>
+            <ol class="dimension-list">
+              <li><span>01</span><b>教学目标</b><i>目标是否清晰可达</i></li>
+              <li><span>02</span><b>学情分析</b><i>设计是否回应学生</i></li>
+              <li><span>03</span><b>内容与重难点</b><i>取舍与聚焦是否恰当</i></li>
+              <li><span>04</span><b>教学活动</b><i>任务是否支持目标</i></li>
+              <li><span>05</span><b>教学评价</b><i>学习证据是否充分</i></li>
+              <li><span>06</span><b>教学评一致性</b><i>各环节是否相互对齐</i></li>
+              <li><span>07</span><b>学生中心</b><i>学习者是否真正参与</i></li>
+            </ol>
+          </section>
+          <section class="principle-card">
+            <div class="principle-mark" aria-hidden="true">“</div>
+            <p>先看证据，再作判断。<br>看不见的设计信息，<br>不会被当成已经做到。</p>
+            <span>课案明鉴 · 工作原则</span>
+          </section>
+          <div id="connection-state" class="connection-state"><i></i><span>正在确认服务状态…</span></div>
+        </aside>
+      </div>
+
+      <section id="result-section" class="result-section" hidden>
+        <div class="result-heading">
+          <div><p class="section-kicker">诊断结果</p><h2>教案观察记录</h2></div>
+          <div class="result-actions"><button id="copy-result" class="secondary-button" type="button">复制结果</button><button id="new-review" class="secondary-button" type="button">重新诊断</button></div>
+        </div>
+        <div id="result-meta" class="result-meta"></div>
+        <article id="result-content" class="result-content" aria-live="polite"></article>
+      </section>
+    </main>
+    <footer><span>课案明鉴</span><span>以证据支持反思 · 以建议支持改进</span></footer>
+  </div>
+  <div id="loading-overlay" class="loading-overlay" hidden>
+    <div class="loading-card"><div class="loader"></div><strong>正在逐项阅读教案</strong><span>正在依据量规核对证据与设计关系…</span></div>
+  </div>
+</body>
+</html>
