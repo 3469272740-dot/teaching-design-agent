@@ -1,32 +1,60 @@
-# 部署到公网
+# 部署到 Render
 
-当前网页可以作为本机应用使用。要给其他地点的同事访问，可部署为 Render Web Service。Render 从 Git 仓库构建并给服务分配 HTTPS 网址；公开访问要求 Node 服务监听 `0.0.0.0` 并使用平台提供的 `PORT`。
+本文说明如何将教学设计网页部署到 Render，并通过环境变量配置访问密码和 OpenAI API。
 
-## 先准备代码
+## GitHub 仓库结构
 
-1. 将整个项目仓库推送到你有权限的 GitHub 仓库，至少包括 `web-agent/` 和 `.codex/skills/teaching-design/`。
-2. 确认 `web-agent/.env` 没有提交。`.gitignore` 已忽略它；只提交 `.env.example`。
-3. 本项目不使用外部 npm 依赖，启动脚本为 `npm start`。
+仓库至少应包含：
 
-## 在 Render 创建服务
+```text
+.codex/skills/teaching-design/
+web-agent/
+  package.json
+  server.mjs
+  public/
+```
 
-1. 在 Render 选择 **New → Web Service**，连接包含本项目的 GitHub 仓库。
-2. 设置：
-   - Runtime：Node
-   - Root Directory：留空（仓库根目录）
-   - Build Command：`cd web-agent && npm install`
-   - Start Command：`cd web-agent && npm start`
-3. 在服务的 Environment 环境变量设置中添加：
-   - `HOST`：`0.0.0.0`
-   - `OPENAI_API_KEY`：你的 API key（使用平台的 Secret 输入，不要写入代码或提交到 Git）
-   - `OPENAI_MODEL`：`gpt-6-astra`，或你账号已开通的模型
-   - 不必手动设置 `PORT`，由托管平台提供。
-4. 创建服务并等待部署完成。Render 会显示可访问的 `https://…onrender.com` 地址；之后可再绑定自有域名。
+不要提交 `web-agent/.env` 或真实 API Key。`.gitignore` 已忽略 `.env`。
 
-以后把修改推送到已连接分支，Render 会按服务设置自动重新部署。费用和免费计划限制以 Render 控制台当时显示为准。
+## 创建 Render Web Service
 
-## 分享前要补的保护
+在 Render 控制台选择 **New → Web Service**，连接 GitHub 仓库，并选择 `main` 分支。设置：
 
-当前版本**没有登录、访问密码或请求频率限制**。若直接公开网址，任何拿到网址的人都可能提交教案并消耗你的 API 用量。因此在发给同事前，应先加访问控制和调用限额；只有自己测试时，可以先部署为受限服务或暂不分享网址。
+| 设置项 | 填写内容 |
+| --- | --- |
+| Runtime / Language | Node |
+| Root Directory | `web-agent` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Instance Type | 初次试用可选 Free |
 
-另外，上传的教案会从浏览器经托管服务发送给配置的模型 API。请求使用 `store: false`，但这不代表零数据保留；输入前请移除不必要的学生身份信息，并按学校的数据要求确认是否适合使用该服务。
+本项目没有外部 npm 依赖，`npm install` 可以完成构建。Render 会提供 `PORT`，无需手动设置。
+
+## 设置环境变量
+
+在服务的 **Environment** 页面添加：
+
+| Key | Value |
+| --- | --- |
+| `HOST` | `0.0.0.0` |
+| `APP_PASSWORD` | 自行设置一条较长、未在其他网站使用过的访问密码 |
+| `OPENAI_API_KEY` | 你自己的 OpenAI API Key，作为 Secret 保存 |
+| `OPENAI_MODEL` | `gpt-6-astra`，或你的 API 项目已开通的模型 |
+
+请勿把 API Key 或访问密码写进代码、上传到 GitHub，或发在聊天中。公网服务配置了 `OPENAI_API_KEY` 却没有配置 `APP_PASSWORD` 时，服务器会拒绝启动。
+
+保存环境变量后，Render 会重新部署。部署成功后，打开 Render 提供的 `https://…onrender.com` 地址，浏览器会提示输入访问密码。把这个密码只分享给可信的使用者。
+
+## 免费方案说明
+
+Render Free Web Service 可用于试用，但闲置约 15 分钟后会休眠；再次访问时可能需要等待服务唤醒。具体额度和限制以 Render 控制台显示为准。
+
+## 隐私和费用
+
+网页会将提交的教案和量规发送给配置的模型 API 进行诊断。请求使用 `store: false`，但这不等同于零数据保留。提交前请删除不必要的学生姓名、联系方式等个人信息，并遵守学校的数据要求。
+
+OpenAI API 用量与 ChatGPT 订阅分开计费。保护好 API Key 和访问密码，并定期检查 API 用量。当前访问保护使用一个共享密码，不含个人账号或调用频率限制；不要把访问地址和密码公开发布。
+
+## 后续更新
+
+将代码更改提交并推送到 GitHub 的 `main` 分支后，Render 会按服务设置自动重新部署。
