@@ -222,7 +222,7 @@ const server = createServer(async (req, res) => {
   try {
     if (APP_PASSWORD && !isAuthorized(req)) {
       res.writeHead(401, {
-        "WWW-Authenticate": 'Basic realm="课案明鉴", charset="UTF-8"',
+        "WWW-Authenticate": 'Basic realm="TeachingDesignAssistant", charset="UTF-8"',
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
       });
