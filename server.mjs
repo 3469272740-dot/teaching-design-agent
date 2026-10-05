@@ -13,12 +13,14 @@ const MAX_BODY = 16 * 1024 * 1024;
 const MAX_DOCX_XML = 20 * 1024 * 1024;
 const MAX_LESSON_CHARS = 100_000;
 await loadDotEnv();
-const MODEL = process.env.OPENAI_MODEL || "gpt-6-astra";
+const API_KEY = process.env.ZZZ_API_KEY || "";
+const API_BASE_URL = (process.env.ZZZ_BASE_URL || "https://api.zhizengzeng.com/v1").replace(/\/+$/, "");
+const MODEL = process.env.ZZZ_MODEL || "gpt-4o-mini";
 const HOST = process.env.HOST || "127.0.0.1";
 const APP_PASSWORD = process.env.APP_PASSWORD || "";
 
-if (HOST === "0.0.0.0" && process.env.OPENAI_API_KEY && !APP_PASSWORD) {
-  throw new Error("公网服务配置 OPENAI_API_KEY 前，必须先设置 APP_PASSWORD 保护访问。");
+if (HOST === "0.0.0.0" && API_KEY && !APP_PASSWORD) {
+  throw new Error("公网服务配置 API 密钥前，必须先设置 APP_PASSWORD 保护访问。");
 }
 
 async function loadDotEnv() {
@@ -155,7 +157,7 @@ function extractOutputText(data) {
 }
 
 async function review(req, res) {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!API_KEY) {
     return sendJson(res, 503, { error: "还没有配置模型 API 密钥。请按 web-agent/README.md 的步骤设置 .env 后重启网页。" });
   }
   if (!req.headers["content-type"]?.includes("application/json")) {
@@ -191,10 +193,10 @@ async function review(req, res) {
   const instructions = await readRubrics();
   let response;
   try {
-    response = await fetch("https://api.openai.com/v1/responses", {
+    response = await fetch(`${API_BASE_URL}/responses`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ model: MODEL, instructions, input, store: false }),
@@ -230,7 +232,7 @@ const server = createServer(async (req, res) => {
     }
     const url = new URL(req.url, "http://127.0.0.1");
     if (req.method === "GET" && url.pathname === "/api/status") {
-      return sendJson(res, 200, { ready: Boolean(process.env.OPENAI_API_KEY), model: MODEL });
+      return sendJson(res, 200, { ready: Boolean(API_KEY), model: MODEL });
     }
     if (req.method === "POST" && url.pathname === "/api/review") return await review(req, res);
     if (req.method !== "GET" && req.method !== "HEAD") return sendJson(res, 405, { error: "不支持此请求方式。" });
