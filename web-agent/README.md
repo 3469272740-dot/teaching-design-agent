@@ -1,15 +1,15 @@
 # 课案明鉴：教学设计诊断网页
 
-这是当前教学设计 Codex skill 的本地网页入口。页面支持粘贴教案或上传 DOCX、TXT、Markdown 文件，并按项目中的七维量规生成证据化诊断。它不保存教案；浏览器将内容发送到本机服务，再由本机服务调用 OpenAI Responses API，且请求中关闭 Response 存储。
+这是当前教学设计 Codex skill 的网页入口。页面支持粘贴教案或上传 DOCX、TXT、Markdown 文件，并按项目中的七维量规生成证据化诊断。它不保存教案；浏览器将内容发送给后端，再由后端调用智增增 Responses API，且请求中关闭 Response 存储。
 
 ## 启动
 
 1. 安装 Node.js 20 或更新版本。
-2. 将 `.env.example` 复制为 `.env`，填入你自己的 OpenAI API key。密钥只放在本机 `.env`，不要贴到网页、对话或版本库。
+2. 将 `.env.example` 复制为 `.env`，把智增增 API Key 填入 `ZZZ_API_KEY`。密钥只放在后端 `.env`，不要贴到网页前端、对话或版本库。
 3. 在此文件夹运行 `node server.mjs`。
 4. 浏览器打开 `http://127.0.0.1:4173`。
 
-可在 `.env` 修改 `OPENAI_MODEL` 和 `PORT`。如果 API key 未配置，页面仍可打开预览，但无法提交诊断。API 使用与 ChatGPT 订阅分开的开发者 API 账户和计费。
+可在 `.env` 修改 `ZZZ_MODEL`、`ZZZ_BASE_URL` 和 `PORT`。默认模型为 `gpt-4o-mini`，请确认智增增账户支持该模型。如果 API Key 未配置，页面仍可打开预览，但无法提交诊断。
 
 ## 支持的教案文件
 
@@ -23,7 +23,7 @@
 
 - 服务只监听本机 `127.0.0.1`，没有账号系统或数据库。
 - 本地网页代码不会把教案写入文件或记录请求内容。
-- 每次诊断会将教案和量规发送至配置的 OpenAI API 项目；请求设置 `store: false`。这会关闭 Responses API 的应用状态存储，但不等同于 Zero Data Retention，服务方仍可能按其数据控制规则处理滥用监测日志。
+- 每次诊断会将教案和量规发送至智增增 API；请求设置 `store: false`。请先确认你可以将提交的材料发送给所使用的 API 服务。
 - 上传包含学生信息的材料前，请先删除不必要的姓名、联系方式等个人信息。
 
 ## 诊断行为
